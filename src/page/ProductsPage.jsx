@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { Modal } from "bootstrap";
-import { useForm } from "react-hook-form";
 import ReactLoading from "react-loading";
+import { Link } from "react-router-dom";
+import Pagination from "../components/pagination";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -12,6 +12,8 @@ export default function ProductsPage() {
 
   const [isScreenLoading, setIsScreenLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [pageInfo, setPageInfo] = useState({});
 
   const addCartItem = async (product_id, qty) => {
     setIsLoading(true);
@@ -29,75 +31,92 @@ export default function ProductsPage() {
     }
   };
 
+  const getProducts = async (page = 1) => {
+    setIsScreenLoading(true);
+    try {
+      const res = await axios.get(
+        `${BASE_URL}/v2/api/${API_PATH}/products?page=${page}`
+      );
+      setProducts(res.data.products);
+      setPageInfo(res.data.pagination);
+    } catch (error) {
+      alert(error, "取得產品失敗");
+    } finally {
+      setIsScreenLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const getProducts = async () => {
-      setIsScreenLoading(true);
-      try {
-        const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products`);
-        setProducts(res.data.products);
-      } catch (error) {
-        alert(error, "取得產品失敗");
-      } finally {
-        setIsScreenLoading(false);
-      }
-    };
     getProducts();
   }, []);
 
+  const handlePageChange = (page) => {
+    getProducts(page);
+  };
+
   return (
-    <div className="container">
-      <div className="mt-4">
-        <table className="table align-middle">
-          <thead>
-            <tr>
-              <th>圖片</th>
-              <th>商品名稱</th>
-              <th>價格</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td style={{ width: "200px" }}>
-                  <img
-                    className="img-fluid"
-                    src={product.imageUrl}
-                    alt={product.title}
-                  />
-                </td>
-                <td>{product.title}</td>
-                <td>
-                  <del className="h6">原價 {product.origin_price} 元</del>
-                  <div className="h5">特價 {product.price}元</div>
-                </td>
-                <td>
-                  <div className="btn-group btn-group-sm">
-                    <button type="button" className="btn btn-outline-secondary">
-                      查看更多
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-outline-danger d-flex align-items-center gap-2"
-                      onClick={() => addCartItem(product.id, 1)}
-                      disabled={isLoading}
-                    >
-                      加到購物車
-                      {isLoading && (
-                        <ReactLoading
-                          type={"spokes"}
-                          color={"#68D3FF"}
-                          height={"1.5rem"}
-                          width={"1.5rem"}
-                        />
-                      )}
-                    </button>
-                  </div>
-                </td>
+    <>
+      <div className="container">
+        <div className="mt-4">
+          <table className="table align-middle text-center">
+            <thead>
+              <tr>
+                <th>圖片</th>
+                <th>商品名稱</th>
+                <th>價格</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {products.map((product) => (
+                <tr key={product.id}>
+                  <td style={{ width: "200px" }}>
+                    <img
+                      className="img-fluid"
+                      src={product.imageUrl}
+                      alt={product.title}
+                    />
+                  </td>
+                  <td>{product.title}</td>
+                  <td>
+                    <del className="h6">原價 {product.origin_price} 元</del>
+                    <div className="h5">特價 {product.price}元</div>
+                  </td>
+                  <td>
+                    <div className="btn-group btn-group-sm">
+                      <Link
+                        className="btn btn-outline-secondary"
+                        to={`/products/${product.id}`}
+                      >
+                        查看更多
+                      </Link>
+                      <button
+                        type="button"
+                        className="btn btn-outline-danger d-flex align-items-center gap-2"
+                        onClick={() => addCartItem(product.id, 1)}
+                        disabled={isLoading}
+                      >
+                        加到購物車
+                        {isLoading && (
+                          <ReactLoading
+                            type={"spokes"}
+                            color={"#68D3FF"}
+                            height={"1.5rem"}
+                            width={"1.5rem"}
+                          />
+                        )}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <Pagination
+            pageInfo={pageInfo}
+            handlePageChange={handlePageChange}
+          ></Pagination>
+        </div>
       </div>
 
       {isScreenLoading && (
@@ -118,6 +137,6 @@ export default function ProductsPage() {
           />
         </div>
       )}
-    </div>
+    </>
   );
 }

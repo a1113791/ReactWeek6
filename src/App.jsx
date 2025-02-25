@@ -8,7 +8,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
 function App() {
-  // const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([]);
   const [tempProduct, setTempProduct] = useState([]);
 
   const [cart, setCart] = useState({});
@@ -25,21 +25,21 @@ function App() {
     }
   };
 
-  // useEffect(() => {
-  //   const getProducts = async () => {
-  //     setIsScreenLoading(true);
-  //     try {
-  //       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products`);
-  //       setProducts(res.data.products);
-  //     } catch (error) {
-  //       alert(error, "取得產品失敗");
-  //     } finally {
-  //       setIsScreenLoading(false);
-  //     }
-  //   };
-  //   getProducts();
-  //   getCart();
-  // }, []);
+  useEffect(() => {
+    const getProducts = async () => {
+      setIsScreenLoading(true);
+      try {
+        const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products`);
+        setProducts(res.data.products);
+      } catch (error) {
+        alert(error, "取得產品失敗");
+      } finally {
+        setIsScreenLoading(false);
+      }
+    };
+    getProducts();
+    getCart();
+  }, []);
 
   const productModalRef = useRef(null);
   useEffect(() => {
@@ -63,22 +63,22 @@ function App() {
 
   const [qtySelect, setQtySelect] = useState(1);
 
-  // const addCartItem = async (product_id, qty) => {
-  //   setIsLoading(true);
-  //   try {
-  //     await axios.post(`${BASE_URL}/v2/api/${API_PATH}/cart`, {
-  //       data: {
-  //         product_id,
-  //         qty: Number(qty),
-  //       },
-  //     });
-  //     getCart();
-  //   } catch (error) {
-  //     alert(error, "加入購物車失敗");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
+  const addCartItem = async (product_id, qty) => {
+    setIsLoading(true);
+    try {
+      await axios.post(`${BASE_URL}/v2/api/${API_PATH}/cart`, {
+        data: {
+          product_id,
+          qty: Number(qty),
+        },
+      });
+      getCart();
+    } catch (error) {
+      alert(error, "加入購物車失敗");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const removeCart = async () => {
     setIsScreenLoading(true);
@@ -156,7 +156,7 @@ function App() {
   return (
     <div className="container">
       <div className="mt-4">
-        {/* <table className="table align-middle">
+        <table className="table align-middle">
           <thead>
             <tr>
               <th>圖片</th>
@@ -210,7 +210,7 @@ function App() {
               </tr>
             ))}
           </tbody>
-        </table> */}
+        </table>
 
         <div
           ref={productModalRef}
